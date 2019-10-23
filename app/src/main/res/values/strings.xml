@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">BookCase</string>
+    <string-array name="books">
+        <item>Stillness Is the Key</item>
+        <item>Digital Minimalism</item>
+        <item>Meditations</item>
+        <item>Blue Highways</item>
+        <item>Mastery</item>
+        <item>Atomic Habits</item>
+        <item>The Story of Philosophy</item>
+        <item>The Laws of Human Nature</item>
+        <item>Think and Grow Rich</item>
+        <item>No Death, No Fear</item>
+    </string-array>
 </resources>
