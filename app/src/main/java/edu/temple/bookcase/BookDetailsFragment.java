@@ -60,5 +60,6 @@ public class BookDetailsFragment extends Fragment {
     // Public method for parent Activity to "talk" to BookDetailsFragment
     public void displayBook(String title) {
         textView.setText(title);
+        textView.setTextSize(60);
     }
 }
