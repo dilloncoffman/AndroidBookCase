@@ -7,23 +7,23 @@
 
     <FrameLayout
         android:id="@+id/container_1"
-        android:layout_width="405dp"
-        android:layout_height="413dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="202dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="1dp"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
 
     <FrameLayout
         android:id="@+id/container_2"
-        android:layout_width="326dp"
-        android:layout_height="409dp"
-        android:layout_marginStart="1dp"
-        android:layout_marginTop="1dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        >
+        android:layout_width="526dp"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/container_1"
+        app:layout_constraintTop_toTopOf="parent">
 
     </FrameLayout>
+
+
 </android.support.constraint.ConstraintLayout>

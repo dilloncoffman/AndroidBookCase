@@ -9,7 +9,7 @@
     <FrameLayout
         android:id="@+id/container_1"
         android:layout_width="202dp"
-        android:layout_height="1023dp"
+        android:layout_height="match_parent"
         android:layout_marginStart="1dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -19,7 +19,7 @@
     <FrameLayout
         android:id="@+id/container_2"
         android:layout_width="395dp"
-        android:layout_height="1022dp"
+        android:layout_height="match_parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
