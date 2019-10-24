@@ -24,14 +24,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         singlePane = (findViewById(R.id.container_2) == null);
 
         Fragment container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1);
-        if (container1Fragment == null) { // if container_1 has no Fragment already in it, attach BookListFragment
+        if (container1Fragment == null && singlePane) { // if container_1 has no Fragment already in it
+            // Attach ViewPagerFragment if singlePane
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(R.id.container_1, BookListFragment.newInstance(books))
+                    .replace(R.id.container_1, new ViewPagerFragment())
                     .commit();
-        } else if (container1Fragment instanceof BookDetailsFragment) { // if container1Fragment is a BookDetailsFragment, pop it off
-            // pop it off stack if it is a BookDetailsFragment so it doesn't show over BookListFragment
-            getSupportFragmentManager().popBackStack();
+        } else if (container1Fragment instanceof BookListFragment && singlePane) { // if container1Fragment is a BookDetailsFragment, pop it off
+            // Attach ViewPagerFragment if returning from landscape double pane
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container_1, new ViewPagerFragment())
+                    .commit();
+        } else { // it's not singlePane
+            // Attach BookListFragment
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.container_1, BookListFragment.newInstance(books))
+                    .commit();
         }
     }
 
@@ -45,14 +55,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         detailsBundle.putString(BookDetailsFragment.BOOK_TITLE_KEY, bookTitle);
         bookDetailsFragment.setArguments(detailsBundle);
 
-        if (singlePane) {
-            // use ViewPager
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .addToBackStack(null) // allows us to hit back arrow and go back to last BookListFragment rather than going back to home screen and closing the app
-                    .replace(R.id.container_1, bookDetailsFragment)
-                    .commit();
-        } else {
+        if (!singlePane) {
             // container_2 should always attach the BookDetailsFragment if not in singlePane
             getSupportFragmentManager()
                     .beginTransaction()
