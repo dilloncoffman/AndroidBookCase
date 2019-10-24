@@ -24,19 +24,21 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         singlePane = (findViewById(R.id.container_2) == null);
 
         Fragment container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1);
-        if (container1Fragment == null && singlePane) { // if container_1 has no Fragment already in it
-            // Attach ViewPagerFragment if singlePane
+
+        if (container1Fragment == null && singlePane) { // if container_1 has no Fragment already attached to it and we're in singlePane
+            // Attach ViewPagerFragment
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .addToBackStack(null)
+                    .add(R.id.container_1, new ViewPagerFragment())
+                    .commit();
+        } else if (container1Fragment instanceof BookListFragment && singlePane) { // if container1Fragment is a BookListFragment, meaning we're coming back to singlePane from landscape mode
+            // Attach ViewPagerFragment
             getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.container_1, new ViewPagerFragment())
                     .commit();
-        } else if (container1Fragment instanceof BookListFragment && singlePane) { // if container1Fragment is a BookDetailsFragment, pop it off
-            // Attach ViewPagerFragment if returning from landscape double pane
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.container_1, new ViewPagerFragment())
-                    .commit();
-        } else { // it's not singlePane
+        } else { // it's not singlePane or its null
             // Attach BookListFragment
             getSupportFragmentManager()
                     .beginTransaction()
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             // container_2 should always attach the BookDetailsFragment if not in singlePane
             getSupportFragmentManager()
                     .beginTransaction()
-                    .addToBackStack(null) // allows us to hit back arrow and go back to last BookListFragment rather than going back to home screen and closing the app
+                    .addToBackStack(null) // allows user to hit back arrow and go back to last BookDetailsFragment rather than going back to home screen and closing the app
                     .replace(R.id.container_2, bookDetailsFragment)
                     .commit();
         }

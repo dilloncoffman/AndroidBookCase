@@ -14,8 +14,6 @@ import android.view.ViewGroup;
 
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link ViewPagerFragment#newInstance} factory method to
- * create an instance of this fragment.
  */
 public class ViewPagerFragment extends Fragment {
     ViewPager mPager;
@@ -25,18 +23,9 @@ public class ViewPagerFragment extends Fragment {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     */
-    public static ViewPagerFragment newInstance() {
-        return new ViewPagerFragment();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
     }
 
     @Override
@@ -60,7 +49,7 @@ public class ViewPagerFragment extends Fragment {
             super(fm);
         }
 
-        // Returns fragment to display for the specific page
+        // Returns BookDetailsFragment to display for the specific book currently swiped to in the ViewPager
         @Override
         public Fragment getItem(int position) {
             switch (position) {

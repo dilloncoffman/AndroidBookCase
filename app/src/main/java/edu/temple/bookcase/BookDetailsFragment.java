@@ -2,6 +2,7 @@ package edu.temple.bookcase;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,7 +60,8 @@ public class BookDetailsFragment extends Fragment {
 
     // Public method for parent Activity to "talk" to BookDetailsFragment
     public void displayBook(String title) {
+        textView.setGravity(Gravity.CENTER);
         textView.setText(title);
-        textView.setTextSize(60);
+        textView.setTextSize(35);
     }
 }
