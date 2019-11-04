@@ -52,12 +52,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void bookSelected(int position) {
-        String bookTitle = books.get(position); // Get bookTitle for the selected position
+        Book book = books.get(position); // Get book at position selected
 
-        // Add bookTitle to bundle to be passed to the BookDetailsFragment
+        // Add book to bundle to be passed to the BookDetailsFragment
         bookDetailsFragment = new BookDetailsFragment();
         Bundle detailsBundle = new Bundle();
-        detailsBundle.putString(BookDetailsFragment.BOOK_KEY, bookTitle);
+        detailsBundle.putParcelable(BookDetailsFragment.BOOK_KEY, book);
         bookDetailsFragment.setArguments(detailsBundle);
 
         if (!singlePane) {
