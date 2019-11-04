@@ -2,6 +2,7 @@ package edu.temple.bookcase;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,7 @@ import java.util.ArrayList;
  * create an instance of this fragment.
  */
 public class BookListFragment extends Fragment {
-    ArrayList<String> books;
+    ArrayList<Book> books;
 
     public final static String BOOKS_KEY = "books";
 
@@ -38,10 +39,10 @@ public class BookListFragment extends Fragment {
      * @param books ArrayList<String> of book titles
      * @return A new instance of fragment BookListFragment.
      */
-    public static BookListFragment newInstance(ArrayList<String> books) {
+    public static BookListFragment newInstance(ArrayList<Book> books) {
         BookListFragment bookListFragment = new BookListFragment();
         Bundle args = new Bundle();
-        args.putStringArrayList(BOOKS_KEY, books);
+        args.putParcelableArrayList(BOOKS_KEY, books);
         bookListFragment.setArguments(args);
         return bookListFragment;
     }
@@ -51,7 +52,7 @@ public class BookListFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Bundle args = getArguments();
         if (args != null) {
-            books = args.getStringArrayList(BOOKS_KEY);
+            books = args.getParcelableArrayList(BOOKS_KEY);
         }
     }
 
