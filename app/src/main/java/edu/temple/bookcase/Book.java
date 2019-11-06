@@ -91,4 +91,15 @@ public class Book implements Parcelable {
         dest.writeInt(published);
         dest.writeString(coverUrl);
     }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", author='" + author + '\'' +
+                ", published=" + published +
+                ", coverUrl='" + coverUrl + '\'' +
+                '}';
+    }
 }
