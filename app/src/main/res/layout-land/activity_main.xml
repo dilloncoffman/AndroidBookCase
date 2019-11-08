@@ -17,19 +17,14 @@
 
     <FrameLayout
         android:id="@+id/container_2"
-        android:layout_width="470dp"
-        android:layout_height="404dp"
+        android:layout_width="529dp"
+        android:layout_height="406dp"
         android:layout_marginStart="2dp"
-        android:layout_marginTop="3dp"
         android:layout_marginBottom="4dp"
-        app:layout_constrainedHeight="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_default="spread"
         app:layout_constraintHorizontal_bias="0.517"
-        app:layout_constraintStart_toEndOf="@+id/container_1"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_default="wrap">
+        app:layout_constraintStart_toEndOf="@+id/container_1">
 
     </FrameLayout>
 
