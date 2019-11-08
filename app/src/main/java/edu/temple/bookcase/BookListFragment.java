@@ -2,6 +2,8 @@ package edu.temple.bookcase;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +12,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -23,7 +24,7 @@ import java.util.List;
  */
 public class BookListFragment extends Fragment {
     ArrayList<Book> books;
-
+    ArrayList<String> bookTitles = new ArrayList<>();
     public final static String BOOKS_KEY = "books";
 
     private OnBookSelectedInterface fragmentParent;
@@ -54,6 +55,12 @@ public class BookListFragment extends Fragment {
         if (args != null) {
             books = args.getParcelableArrayList(BOOKS_KEY);
         }
+        // Get all book titles to be used for ArrayAdapter list item
+        if (books != null) {
+            for (int i = 0; i < books.size(); i++) {
+                bookTitles.add(books.get(i).getTitle());
+            }
+        }
     }
 
     @Override
@@ -62,7 +69,7 @@ public class BookListFragment extends Fragment {
         // Inflate the layout for this fragment
         ListView listView = (ListView) inflater.inflate(R.layout.fragment_book_list, container, false);
 
-        listView.setAdapter(new ArrayAdapter<>((Context) fragmentParent, android.R.layout.simple_list_item_1, books));
+        listView.setAdapter(new ArrayAdapter<>((Context) fragmentParent, android.R.layout.simple_list_item_1, bookTitles));
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
