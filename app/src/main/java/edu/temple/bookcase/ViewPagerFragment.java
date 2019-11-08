@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -85,7 +84,6 @@ public class ViewPagerFragment extends Fragment {
             this.bookDetailsFragments = bookDetailsFragments;
         }
 
-        // Returns BookDetailsFragment to display for the specific book currently swiped to in the ViewPager
         @Override
         public Fragment getItem(int position) {
             return bookDetailsFragments.get(position);
@@ -100,6 +98,10 @@ public class ViewPagerFragment extends Fragment {
         public int getItemPosition(@NonNull Object object) {
             return PagerAdapter.POSITION_NONE;
         }
+    }
+
+    public ArrayList<BookDetailsFragment> getBooks() {
+        return this.bookDetailsFragments;
     }
 
 }

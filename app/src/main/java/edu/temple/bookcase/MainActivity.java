@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     // Get book at index
                     JSONObject bookObject = booksArray.getJSONObject(i);
                     // Create Book using JSON data
-                    Book newBook = new Book(bookObject.getInt("book_id"), bookObject.getString("title"), bookObject.getString("author"), bookObject.getInt("published"), bookObject.getString("cover_url"));
+                    Book newBook = new Book(bookObject.getInt("book_id"), bookObject.getString("title"), bookObject.getString("author"), bookObject.getString("duration"), bookObject.getInt("published"), bookObject.getString("cover_url"));
                     // Add newBook to ArrayList<Book>
                     books.add(newBook);
                     Log.d("Added book: ", newBook.toString());
@@ -48,7 +48,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     // Attach ViewPagerFragment
                     getSupportFragmentManager()
                             .beginTransaction()
-                            .addToBackStack(null)
                             .add(R.id.container_1, ViewPagerFragment.newInstance(books))
                             .commit();
                 } else if (container1Fragment instanceof BookListFragment && singlePane) { // if container1Fragment is a BookListFragment, meaning we're coming back to singlePane from landscape mode
