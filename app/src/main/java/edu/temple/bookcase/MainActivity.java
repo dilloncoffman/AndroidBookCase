@@ -6,6 +6,9 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -20,6 +23,9 @@ import java.util.ArrayList;
 public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface {
     BookDetailsFragment bookDetailsFragment;
     ArrayList<Book> books;
+    Button searchBtn;
+    EditText searchInput;
+    String searchQuery;
     boolean singlePane;
 
     Handler booksHandler = new Handler(new Handler.Callback() {
@@ -33,10 +39,15 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     // Get book at index
                     JSONObject bookObject = booksArray.getJSONObject(i);
                     // Create Book using JSON data
-                    Book newBook = new Book(bookObject.getInt("book_id"), bookObject.getString("title"), bookObject.getString("author"), bookObject.getString("duration"), bookObject.getInt("published"), bookObject.getString("cover_url"));
+                    Book newBook = new Book(
+                            bookObject.getInt("book_id"),
+                            bookObject.getString("title"),
+                            bookObject.getString("author"),
+                            bookObject.getString("duration"),
+                            bookObject.getInt("published"),
+                            bookObject.getString("cover_url"));
                     // Add newBook to ArrayList<Book>
                     books.add(newBook);
-                    Log.d("Added book: ", newBook.toString());
                 }
 
                 // Check if we're just using a single pane
@@ -74,16 +85,51 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Get books from books string-array resource
 
-        // Fetch books via API here and add them all to ArrayList<Book> books
-        // books.addAll(Arrays.asList(res.getStringArray(R.array.books)));
+        // Get user search query if any
+        searchInput = findViewById(R.id.searchInput);
+        searchBtn = findViewById(R.id.searchBtn);
+
+        searchBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Set search query string that is currently in the searchInput EditText
+                searchQuery = searchInput.getText().toString();
+//                new Thread() {
+//                    @Override
+//                    public void run() {
+//                        URL url = null;
+//                        try {
+//                            if (!(searchQuery.equals(""))) {
+//                                url = new URL("https://kamorris.com/lab/audlib/booksearch.php?search=" + searchQuery);
+//                                Log.d("Search URL is: ", url.toString());
+//                                BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+//                                StringBuilder builder = new StringBuilder(); // StringBuilder, keep adding on bits of a string
+//                                String response;
+//                                while ((response = reader.readLine()) != null) {
+//                                    builder.append(response);
+//                                }
+//                                // Need to use Handler
+//                                Message msg = Message.obtain();
+//                                msg.obj = builder.toString(); // gives you string created from StringBuilder object
+//                                booksHandler.sendMessage(msg);
+//                            }
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                }.start();
+            }
+        });
+
+        // Fetch books via API and add them all or some if query provided to ArrayList<Book> books
         new Thread() {
             @Override
             public void run() {
                 URL url = null;
                 try {
                     url = new URL("https://kamorris.com/lab/audlib/booksearch.php");
+                    Log.d("No search query entered. URL is: ", url.toString());
                     BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
                     StringBuilder builder = new StringBuilder(); // StringBuilder, keep adding on bits of a string
                     String response;
