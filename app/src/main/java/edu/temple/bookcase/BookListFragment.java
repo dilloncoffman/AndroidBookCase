@@ -2,8 +2,6 @@ package edu.temple.bookcase;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+
 import java.util.ArrayList;
 
 
@@ -70,7 +69,6 @@ public class BookListFragment extends Fragment {
         ListView listView = (ListView) inflater.inflate(R.layout.fragment_book_list, container, false);
 
         listView.setAdapter(new ArrayAdapter<>((Context) fragmentParent, android.R.layout.simple_list_item_1, bookTitles));
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -110,5 +108,9 @@ public class BookListFragment extends Fragment {
      */
     public interface OnBookSelectedInterface {
         void bookSelected(int position);
+    }
+
+    public ArrayList<Book> getBooks() {
+        return this.books;
     }
 }

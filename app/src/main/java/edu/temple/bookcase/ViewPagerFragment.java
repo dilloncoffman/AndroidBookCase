@@ -65,11 +65,15 @@ public class ViewPagerFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_view_pager, container, false);
-        mPager = view.findViewById(R.id.pager);
+        mPager = view.findViewById(R.id.viewPagerFragment);
         // Instantiate a ViewPager and a PagerAdapter.
         pagerAdapter = new BookDetailsPagerAdapter(getChildFragmentManager(), bookDetailsFragments);
         mPager.setAdapter(pagerAdapter);
         return view;
+    }
+
+    public ArrayList<Book> getBooks() {
+        return this.books;
     }
 
     /**
@@ -99,9 +103,4 @@ public class ViewPagerFragment extends Fragment {
             return PagerAdapter.POSITION_NONE;
         }
     }
-
-    public ArrayList<BookDetailsFragment> getBooks() {
-        return this.bookDetailsFragments;
-    }
-
 }
