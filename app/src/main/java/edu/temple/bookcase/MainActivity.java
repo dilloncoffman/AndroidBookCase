@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface {
     BookDetailsFragment bookDetailsFragment;
@@ -115,10 +114,13 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
         singlePane = (findViewById(R.id.container_2) == null); // check if in single pane mode
 
+        // Start-up query
         if (container1Fragment == null && container2Fragment == null) { // if start up, both of these fragment containers are null, do first fetch to get all books
             Log.d("CONTAINER 1 FRAGMENT NULL, FETCHING BOOKS", String.valueOf(singlePane));
             fetchBooks(null);
         }
+
+        // Handle portrait to landscape and vice versa orientation changes
         if (container1Fragment instanceof BookListFragment && singlePane) { // From landscape to portrait after initial load without searching
             Log.d("Went back to portrait from landscape. Single pane should be true == ", String.valueOf(singlePane));
             // if container1Fragment (BookListFragment) != null and it has books, pass those books to ViewPagerFragment
@@ -145,8 +147,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         .replace(R.id.container_1, BookListFragment.newInstance(books))
                         .commit();
             }
+        } else if (container1Fragment instanceof BookListFragment) { // Tablet size
+            Log.d("Tablet size: ", String.valueOf(container1Fragment));
+            // if container1Fragment (ViewPagerFragment) != null and it has books, pass those books to BookListFragment
+            if (container1Fragment != null && ((BookListFragment) container1Fragment).getBooks() != null) {
+                Log.d("Passing books from ViewPagerFragment to BookListFragment. Single pane should be false == ", String.valueOf(singlePane));
+                books = ((BookListFragment) container1Fragment).getBooks();
+                for (int i = 0; i < ((BookListFragment) container1Fragment).getBooks().size(); i++) {
+                    Log.d("Books currently in ViewPagerFragment passing to BookListFragment: Single pane should be false == ", String.valueOf(singlePane));
+                    Log.d("book: ", ((BookListFragment) container1Fragment).getBooks().get(i).toString());
+                }
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container_1, BookListFragment.newInstance(books))
+                        .commit();
+            }
         }
 
+        // Search click listener
         searchBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -166,6 +184,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         });
     }
 
+    /* Fetches books */
     public void fetchBooks(final String searchString) {
         if (searchString == null || searchString.length() == 0) { // if searchQuery is null or a user has deleted all entered text and hit search again, fetch all books
             // Fetch books via API and add them all or some if query provided to ArrayList<Book> books
