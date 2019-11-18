@@ -3,4 +3,7 @@
     <string name="publishedIn">Published in %d</string>
     <string name="pageLength">%s pages</string>
     <string name="image_of_book_cover">Image of book cover</string>
+    <string name="play">Play</string>
+    <string name="stop">Stop</string>
+    <string name="pause">Pause</string>
 </resources>

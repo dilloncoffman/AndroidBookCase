@@ -8,13 +8,14 @@
 
     <ImageView
         android:id="@+id/bookCover"
-        android:layout_width="128dp"
-        android:layout_height="163dp"
-        android:layout_marginTop="44dp"
+        android:layout_width="125dp"
+        android:layout_height="132dp"
+        android:layout_marginStart="110dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="240dp"
         android:contentDescription="@string/image_of_book_cover"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.499"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/playBtn"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -22,14 +23,14 @@
         android:layout_width="414dp"
         android:layout_height="30dp"
         android:layout_marginHorizontal="12sp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="12dp"
         android:autoSizeMaxTextSize="35sp"
         android:autoSizeMinTextSize="12sp"
         android:autoSizeTextType="uniform"
         android:gravity="center"
         app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bookCover" />
 
@@ -37,7 +38,6 @@
         android:id="@+id/bookPageLength"
         android:layout_width="126dp"
         android:layout_height="22dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="130dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/bookPublishedIn"
@@ -47,20 +47,31 @@
         android:id="@+id/bookAuthor"
         android:layout_width="327dp"
         android:layout_height="22dp"
-        android:layout_marginTop="10dp"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.482"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bookTitle"
-        app:layout_constraintVertical_bias="0.149" />
+        app:layout_constraintVertical_bias="0.026" />
+
+    <Button
+        android:id="@+id/playBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="52dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="50dp"
+        android:text="@string/play"
+        app:layout_constraintEnd_toStartOf="@+id/bookCover"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/bookPublishedIn"
         android:layout_width="126dp"
         android:layout_height="22dp"
         android:layout_marginStart="130dp"
-        android:layout_marginTop="8dp"
         app:layout_constraintEnd_toStartOf="@+id/bookPageLength"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bookAuthor" />

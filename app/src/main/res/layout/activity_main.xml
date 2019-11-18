@@ -18,7 +18,7 @@
         android:id="@+id/searchBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="16dp"
         android:text="@android:string/search_go"
         app:layout_constraintEnd_toEndOf="parent"
@@ -29,15 +29,42 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="78dp"
+        android:autofillHints="Search..."
         android:ems="10"
         android:inputType="textShortMessage"
+        android:labelFor="@id/searchInput"
         app:layout_constraintEnd_toStartOf="@+id/searchBtn"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:autofillHints="Search..."
-        android:labelFor="@id/searchInput"/>
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/pauseBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/pause"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
+
+    <Button
+        android:id="@+id/stopBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/stop"
+        app:layout_constraintStart_toEndOf="@+id/pauseBtn"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
+
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="250dp"
+        android:layout_height="34dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintStart_toEndOf="@+id/stopBtn"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
 
 </android.support.constraint.ConstraintLayout>

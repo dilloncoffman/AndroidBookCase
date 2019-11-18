@@ -5,6 +5,35 @@
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <SeekBar
+        android:id="@+id/seekBar"
+        android:layout_width="270dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="35dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="44dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/stopBtn"
+        app:layout_constraintTop_toBottomOf="@+id/searchBtn" />
+
+    <Button
+        android:id="@+id/stopBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="25dp"
+        android:text="@string/stop"
+        app:layout_constraintStart_toEndOf="@+id/pauseBtn"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
+
+    <Button
+        android:id="@+id/pauseBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="14dp"
+        android:text="@string/pause"
+        app:layout_constraintStart_toEndOf="@+id/container_1"
+        app:layout_constraintTop_toBottomOf="@+id/searchInput" />
+
     <FrameLayout
         android:id="@+id/container_1"
         android:layout_width="202dp"
@@ -17,39 +46,37 @@
 
     <FrameLayout
         android:id="@+id/container_2"
-        android:layout_width="524dp"
-        android:layout_height="363dp"
+        android:layout_width="526dp"
+        android:layout_height="315dp"
         android:layout_marginStart="2dp"
         android:layout_marginTop="1dp"
         android:layout_marginBottom="2dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.727"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toEndOf="@+id/container_1"
-        app:layout_constraintTop_toBottomOf="@+id/searchInput">
+        app:layout_constraintTop_toBottomOf="@+id/searchInput"
+        app:layout_constraintVertical_bias="1.0">
 
     </FrameLayout>
 
-    <Button
-        android:id="@+id/searchBtn"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="49dp"
-        android:layout_marginEnd="33dp"
-        android:text="@android:string/search_go"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.48"
-        app:layout_constraintStart_toEndOf="@+id/searchInput"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <EditText
         android:id="@+id/searchInput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="68dp"
+        android:layout_width="225dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="14dp"
         android:ems="10"
         android:inputType="textShortMessage"
         app:layout_constraintStart_toEndOf="@+id/container_1"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/searchBtn"
+        android:layout_width="88dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@android:string/search_go"
+        app:layout_constraintStart_toEndOf="@+id/searchInput"
         app:layout_constraintTop_toTopOf="parent" />
 
 
