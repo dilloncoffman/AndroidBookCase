@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     Fragment container2Fragment; // BookDetailsFragment in landscape
     ArrayList<Book> books;
     Button searchBtn;
+    Button pauseBtn;
+    Button stopBtn;
     EditText searchInput;
     String searchQuery = "";
     boolean singlePane;
@@ -134,6 +136,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         // Get user search query if any
         searchInput = findViewById(R.id.searchInput);
         searchBtn = findViewById(R.id.searchBtn);
+        pauseBtn = findViewById(R.id.pauseBtn);
+        stopBtn = findViewById(R.id.stopBtn);
 
         container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
         container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
@@ -209,6 +213,29 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 }
                 // Do query for new books
                 fetchBooks(searchQuery);
+            }
+        });
+
+        // Pause click listener
+        pauseBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Only if connected to service and currently playing something
+                if (connected && mediaControlBinder.isPlaying()) {
+                    mediaControlBinder.pause(); // pause the book
+                }
+            }
+        });
+
+        // Stop click listener
+        stopBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Only if connected to service
+                if (connected) {
+                    mediaControlBinder.stop(); // stop the book, assuming we'd want to stop (reset progress to beginning) even if in paused state
+                    // set SeekBar to beginning of book currently being listened to
+                }
             }
         });
     }
@@ -295,7 +322,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public void playBook(int bookId) {
         if (connected) {
             Log.d("Playing BOOK", String.valueOf(connected));
-            mediaControlBinder.play(bookId);
+            /*
+                Check if there is a position saved to seekTo - going from paused to playing states
+                This will be implemented after getting handler of SeekBar working
+             */
+            mediaControlBinder.play(bookId); // play book
         }
     }
 }
