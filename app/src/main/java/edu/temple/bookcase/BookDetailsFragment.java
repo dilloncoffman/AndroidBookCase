@@ -1,5 +1,6 @@
 package edu.temple.bookcase;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,14 +21,22 @@ import java.util.Objects;
 
 /**
  * A simple {@link Fragment} subclass.
+ * Activities that contain this fragment must implement the
+ * {@link BookDetailsFragment.OnBookPlay} interface
+ * to handle interaction events.
+ * Use the {@link BookDetailsFragment#newInstance} factory method to
+ * create an instance of this fragment.
  */
 public class BookDetailsFragment extends Fragment {
 
+    public static final String BOOK_KEY = "book";
+    private OnBookPlay fragmentParent;
     ConstraintLayout bookDetailsView;
     ImageView bookCover;
     TextView bookTitle, bookAuthor, bookPublishedIn, bookPageLength;
-    public static final String BOOK_KEY = "book";
     Book book;
+    Button playBtn;
+
 
     public BookDetailsFragment() {
         // Required empty public constructor
@@ -74,8 +84,34 @@ public class BookDetailsFragment extends Fragment {
         bookPageLength = getView().findViewById(R.id.bookPageLength);
         if (book != null) {
             displayBook(book);
+            playBtn = getView().findViewById(R.id.playBtn);
+            playBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   fragmentParent.playBook(book.getId());
+                }
+            });
+        }
+
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof BookDetailsFragment.OnBookPlay) {
+            fragmentParent = (BookDetailsFragment.OnBookPlay) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnBookPlay interface");
         }
     }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        fragmentParent = null;
+    }
+
 
     // Public method for parent Activity to "talk" to BookDetailsFragment
     public void displayBook(Book book) {
@@ -91,5 +127,19 @@ public class BookDetailsFragment extends Fragment {
 
         bookPageLength.setText(String.format(getResources().getString(R.string.pageLength), book.getDuration()));
         bookPageLength.setGravity(Gravity.CENTER);
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnBookPlay {
+        void playBook(int bookId);
     }
 }

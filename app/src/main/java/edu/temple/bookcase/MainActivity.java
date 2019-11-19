@@ -1,6 +1,11 @@
 package edu.temple.bookcase;
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
@@ -22,7 +27,7 @@ import java.util.ArrayList;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
-public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface {
+public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface, BookDetailsFragment.OnBookPlay {
     BookDetailsFragment bookDetailsFragment;
     Fragment container1Fragment;
     Fragment container2Fragment; // BookDetailsFragment in landscape
@@ -31,6 +36,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     EditText searchInput;
     String searchQuery = "";
     boolean singlePane;
+
+    // Lab 9 Service-related variables
+    boolean connected;
+    Intent playBookIntent;
+    AudiobookService.MediaControlBinder mediaControlBinder;
+    ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            connected = true;
+            mediaControlBinder = (AudiobookService.MediaControlBinder) service; // hold on to Binder that service is returning that describes interactions you can perform
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            connected = false; // no longer connected
+            mediaControlBinder = null; // to protect against memory leak
+        }
+    };
 
     Handler booksHandler = new Handler(new Handler.Callback() {
         @Override
@@ -116,6 +139,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
         singlePane = (findViewById(R.id.container_2) == null); // check if in single pane mode
 
+        // Bind to AudiobookService
+        playBookIntent = new Intent(this, AudiobookService.class);
+        bindService(playBookIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+
         // Start-up query
         if (container1Fragment == null && container2Fragment == null) { // if start up, both of these fragment containers are null, do first fetch to get all books
             Log.d("CONTAINER 1 FRAGMENT NULL, FETCHING BOOKS", String.valueOf(singlePane));
@@ -184,6 +211,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 fetchBooks(searchQuery);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unbindService(serviceConnection);
     }
 
     /* Fetches books */
@@ -255,6 +288,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     .beginTransaction()
                     .replace(R.id.container_2, bookDetailsFragment)
                     .commit();
+        }
+    }
+
+    @Override
+    public void playBook(int bookId) {
+        if (connected) {
+            Log.d("Playing BOOK", String.valueOf(connected));
+            mediaControlBinder.play(bookId);
         }
     }
 }
