@@ -42,7 +42,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     boolean singlePane;
     boolean paused;
     boolean playing;
-    int currentProgress;
     int nowPlayingBookDuration;
 
     // Lab 9 Service-related variables
@@ -268,10 +267,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             @Override
             public void onClick(View v) {
                 // Only if connected to service and currently playing something
-                if (connected && mediaControlBinder.isPlaying()) {
+                if (connected && mediaControlBinder.isPlaying() && !paused) {
                     mediaControlBinder.pause(); // pause the book
                     playing = false;
                     paused = true;
+                } else if (connected && !mediaControlBinder.isPlaying() && paused) { // Un-pause the book with the way AudiobookService method for pausing is set up
+                    mediaControlBinder.pause(); // Resumes audio playback
+                    playing = true;
+                    paused = false;
                 }
             }
         });
@@ -284,6 +287,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 if (connected) {
                     mediaControlBinder.stop(); // stop the book, assuming we'd want to stop (reset progress to beginning) even if in paused state
                     seekBar.setProgress(0); // set SeekBar to beginning of book currently being listened to
+                    paused = false;
+                    playing = false;
                 }
             }
         });
@@ -371,20 +376,13 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public void playBook(Book book) {
         if (connected) {
             Log.d("Playing BOOK", String.valueOf(connected));
-            /*
-                TODO Check if there is a position saved to seekTo - going from paused to playing states
-                This will be implemented after getting handler of SeekBar working
-            */
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
             nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
             // TODO Set Now Playing book title
-            if (paused) {
-                mediaControlBinder.play(book.getId(), currentProgress);
-            } else {
-                mediaControlBinder.play(book.getId()); // Play book
-                playing = true;
-                paused = false;
-            }
+            // Playing a new book from the start
+            mediaControlBinder.play(book.getId()); // Play book
+            playing = true;
+            paused = false;
         }
     }
 }
