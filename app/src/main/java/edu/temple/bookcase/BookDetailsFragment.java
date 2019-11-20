@@ -88,7 +88,7 @@ public class BookDetailsFragment extends Fragment {
             playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   fragmentParent.playBook(book.getId());
+                   fragmentParent.playBook(book);
                 }
             });
         }
@@ -140,6 +140,6 @@ public class BookDetailsFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnBookPlay {
-        void playBook(int bookId);
+        void playBook(Book book);
     }
 }
