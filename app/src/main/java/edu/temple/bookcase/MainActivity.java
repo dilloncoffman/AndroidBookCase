@@ -29,6 +29,9 @@ import java.util.ArrayList;
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface, BookDetailsFragment.OnBookPlay {
+    private static int nowPlayingBookDuration;
+    private static String nowPlayingBookTitle;
+    private static int nowPlayingProgress;
     BookDetailsFragment bookDetailsFragment;
     Fragment container1Fragment;
     Fragment container2Fragment; // BookDetailsFragment in landscape
@@ -42,7 +45,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     boolean singlePane;
     boolean paused;
     boolean playing;
-    int nowPlayingBookDuration;
 
     // Lab 9 Service-related variables
     boolean connected;
@@ -72,7 +74,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 seekBar = findViewById(R.id.seekBar);
                 AudiobookService.BookProgress bookProgress = (AudiobookService.BookProgress) msg.obj;
                 Log.d("Book progress is: ", String.valueOf(bookProgress.getProgress()));
-                if (seekBar != null && (bookProgress.getProgress() < nowPlayingBookDuration)) {
+                Log.d("Now playing book duration is", String.valueOf(MainActivity.nowPlayingBookDuration));
+                Log.d("Now playing book title is", String.valueOf(MainActivity.nowPlayingBookTitle));
+                Log.d("Now playing book progress is", String.valueOf(MainActivity.nowPlayingProgress));
+
+                if (seekBar != null && (bookProgress.getProgress() < MainActivity.nowPlayingBookDuration)) {
                     seekBar.setProgress(bookProgress.getProgress()); // Set progress of SeekBar to current book's progress
                     seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
@@ -80,7 +86,10 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                             if (fromUser) {
                                 if (connected) {
                                     mediaControlBinder.seekTo(progress);
+                                    nowPlayingProgress = progress + 1;
                                 }
+                            } else {
+                                nowPlayingProgress = progress + 1;
                             }
                         }
 
@@ -187,6 +196,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         pauseBtn = findViewById(R.id.pauseBtn);
         stopBtn = findViewById(R.id.stopBtn);
         seekBar = findViewById(R.id.seekBar);
+        seekBar.setProgress(MainActivity.nowPlayingProgress); // set current progress even after Activity is restarted
+        seekBar.setMax(MainActivity.nowPlayingBookDuration); // set seekBar max even after Activity is restarted
 
         container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
         container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
@@ -377,11 +388,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     @Override
     public void playBook(Book book) {
         startService(playBookIntent); // start AudiobookService when playing
+
         if (connected) {
             Log.d("Playing BOOK", String.valueOf(connected));
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
             nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
-            // TODO Set Now Playing book title
+            nowPlayingBookTitle = book.getTitle(); // TODO Set Now Playing book title
             // Playing a new book from the start
             mediaControlBinder.play(book.getId()); // Play book
             playing = true;
