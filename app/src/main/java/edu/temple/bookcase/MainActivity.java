@@ -52,12 +52,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             connected = true;
+            Log.d("ServiceConnection: ","Connected");
             mediaControlBinder = (AudiobookService.MediaControlBinder) service; // hold on to Binder that service is returning that describes interactions you can perform
             mediaControlBinder.setProgressHandler(seekBarHandler); // set Handler for SeekBar progress
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d("ServiceConnection: ","Disconnected");
             connected = false; // no longer connected
             mediaControlBinder = null; // to protect against memory leak
         }
@@ -66,36 +68,37 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     Handler seekBarHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
-            seekBar = findViewById(R.id.seekBar);
-            AudiobookService.BookProgress bookProgress = (AudiobookService.BookProgress) msg.obj;
-
-            if (seekBar != null && mediaControlBinder.isPlaying() && (bookProgress.getProgress() < nowPlayingBookDuration)) {
-                seekBar.setProgress(bookProgress.getProgress()); // Set progress of SeekBar to current book's progress
-                seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                    @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        if (fromUser) {
-                            if (connected) {
-                                mediaControlBinder.seekTo(progress);
+            if (msg.obj != null) {
+                seekBar = findViewById(R.id.seekBar);
+                AudiobookService.BookProgress bookProgress = (AudiobookService.BookProgress) msg.obj;
+                Log.d("Book progress is: ", String.valueOf(bookProgress.getProgress()));
+                if (seekBar != null && (bookProgress.getProgress() < nowPlayingBookDuration)) {
+                    seekBar.setProgress(bookProgress.getProgress()); // Set progress of SeekBar to current book's progress
+                    seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                        @Override
+                        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                            if (fromUser) {
+                                if (connected) {
+                                    mediaControlBinder.seekTo(progress);
+                                }
                             }
                         }
+
+                        @Override
+                        public void onStartTrackingTouch(SeekBar seekBar) {
+
+                        }
+
+                        @Override
+                        public void onStopTrackingTouch(SeekBar seekBar) {
+
+                        }
+                    });
+                } else if (seekBar != null && mediaControlBinder.isPlaying() && (bookProgress.getProgress() == nowPlayingBookDuration)) { // At the end of the book's duration
+                    if (connected) {
+                        mediaControlBinder.stop(); // Stop the book, which changes the playingState in AudiobookService accordingly
+                        seekBar.setProgress(0); // Set SeekBar back to beginning
                     }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) {
-
-                    }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) {
-
-                    }
-                });
-                Log.d("BookProgress is: ", String.valueOf(bookProgress.getProgress()));
-            } else if (seekBar != null && mediaControlBinder.isPlaying() && (bookProgress.getProgress() == nowPlayingBookDuration)) { // At the end of the book's duration
-                if (connected) {
-                    mediaControlBinder.stop(); // Stop the book, which changes the playingState in AudiobookService accordingly
-                    seekBar.setProgress(0); // Set SeekBar back to beginning
                 }
             }
             return true;
@@ -191,6 +194,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
         // Bind to AudiobookService
         playBookIntent = new Intent(this, AudiobookService.class);
+        Log.d("BINDING TO AUDIOBOOKSERVICE ", "bound to AudiobookService");
         bindService(playBookIntent, serviceConnection, Context.BIND_AUTO_CREATE);
 
         // Start-up query
@@ -217,10 +221,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             if (container1Fragment != null && ((ViewPagerFragment) container1Fragment).getBooks() != null) {
                 Log.d("Passing books from ViewPagerFragment to BookListFragment. Single pane should be false == ", String.valueOf(singlePane));
                 books = ((ViewPagerFragment) container1Fragment).getBooks();
-                for (int i = 0; i < ((ViewPagerFragment) container1Fragment).getBooks().size(); i++) {
-                    Log.d("Books currently in ViewPagerFragment passing to BookListFragment: Single pane should be false == ", String.valueOf(singlePane));
-                    Log.d("book: ", ((ViewPagerFragment) container1Fragment).getBooks().get(i).toString());
-                }
                 getSupportFragmentManager()
                         .beginTransaction()
                         .replace(R.id.container_1, BookListFragment.newInstance(books))
@@ -267,11 +267,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             @Override
             public void onClick(View v) {
                 // Only if connected to service and currently playing something
-                if (connected && mediaControlBinder.isPlaying() && !paused) {
+                if (connected && !paused) {
                     mediaControlBinder.pause(); // pause the book
                     playing = false;
                     paused = true;
-                } else if (connected && !mediaControlBinder.isPlaying() && paused) { // Un-pause the book with the way AudiobookService method for pausing is set up
+                } else if (connected) { // Un-pause the book with the way AudiobookService method for pausing is set up
                     mediaControlBinder.pause(); // Resumes audio playback
                     playing = true;
                     paused = false;
@@ -289,6 +289,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     seekBar.setProgress(0); // set SeekBar to beginning of book currently being listened to
                     paused = false;
                     playing = false;
+                    stopService(playBookIntent);
                 }
             }
         });
@@ -297,6 +298,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Log.d("UNBINDING FROM AUDIOBOOKSERVICE ", "Unbinded service connection");
         unbindService(serviceConnection);
     }
 
@@ -374,6 +376,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void playBook(Book book) {
+        startService(playBookIntent); // start AudiobookService when playing
         if (connected) {
             Log.d("Playing BOOK", String.valueOf(connected));
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
