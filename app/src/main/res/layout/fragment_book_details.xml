@@ -7,26 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".BookDetailsFragment">
 
-    <Button
-        android:id="@+id/playBtn"
-        android:layout_width="70dp"
-        android:layout_height="38dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:text="@string/play"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ImageView
         android:id="@+id/bookCover"
         android:layout_width="233dp"
         android:layout_height="213dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="40dp"
         android:contentDescription="@string/image_of_book_cover"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.541"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/bookPageLength"
+        android:layout_width="126dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="44dp"
+        app:layout_constraintStart_toEndOf="@+id/bookPublishedIn"
+        app:layout_constraintTop_toTopOf="@+id/bookAuthor" />
 
     <TextView
         android:id="@+id/bookAuthor"
@@ -35,43 +33,43 @@
         android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.546"
+        app:layout_constraintHorizontal_bias="0.492"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bookTitle"
-        app:layout_constraintVertical_bias="0.061" />
-
-    <TextView
-        android:id="@+id/bookPageLength"
-        android:layout_width="126dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintStart_toEndOf="@+id/bookPublishedIn"
-        app:layout_constraintTop_toTopOf="@+id/bookAuthor" />
-
-    <TextView
-        android:id="@+id/bookPublishedIn"
-        android:layout_width="126dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="68dp"
-        android:layout_marginTop="40dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/bookAuthor" />
+        app:layout_constraintVertical_bias="0.077" />
 
     <TextView
         android:id="@+id/bookTitle"
         android:layout_width="match_parent"
         android:layout_height="75dp"
         android:layout_marginHorizontal="12sp"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="8dp"
         android:autoSizeMaxTextSize="35sp"
         android:autoSizeMinTextSize="12sp"
         android:autoSizeTextType="uniform"
         android:gravity="center"
         app:autoSizeTextType="uniform"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.75"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/bookCover" />
+
+    <TextView
+        android:id="@+id/bookPublishedIn"
+        android:layout_width="126dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="44dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/bookAuthor" />
+
+    <Button
+        android:id="@+id/playBtn"
+        android:layout_width="70dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="15dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/play"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </android.support.constraint.ConstraintLayout>
