@@ -4,11 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public class Book implements Parcelable {
+    private boolean bookDownloaded;
+    private int duration;
+    private int savedProgress;
+    private int published;
     private int id;
     private String title;
     private String author;
-    private int duration;
-    private int published;
     private String coverUrl;
 
     public Book(int id, String title, String author, int duration, int published, String coverUrl) {
@@ -41,6 +43,14 @@ public class Book implements Parcelable {
         }
     };
 
+    public boolean isBookDownloaded() {
+        return bookDownloaded;
+    }
+
+    public void setBookDownloaded(boolean bookDownloaded) {
+        this.bookDownloaded = bookDownloaded;
+    }
+
     public int getId() {
         return id;
     }
@@ -49,20 +59,12 @@ public class Book implements Parcelable {
         this.id = id;
     }
 
-    public String getTitle() {
-        return title;
+    public int getSavedProgress() {
+        return savedProgress;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
+    public void setSavedProgress(int savedProgress) {
+        this.savedProgress = savedProgress;
     }
 
     public int getDuration() {
@@ -89,6 +91,22 @@ public class Book implements Parcelable {
         this.coverUrl = coverUrl;
     }
 
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -107,11 +125,13 @@ public class Book implements Parcelable {
     @Override
     public String toString() {
         return "Book{" +
-                "id=" + id +
+                "bookDownloaded=" + bookDownloaded +
+                ", duration=" + duration +
+                ", savedProgress=" + savedProgress +
+                ", published=" + published +
+                ", id=" + id +
                 ", title='" + title + '\'' +
                 ", author='" + author + '\'' +
-                ", duration=" + duration +
-                ", published=" + published +
                 ", coverUrl='" + coverUrl + '\'' +
                 '}';
     }
