@@ -30,9 +30,9 @@ import java.util.ArrayList;
 import edu.temple.audiobookplayer.AudiobookService;
 
 public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface, BookDetailsFragment.OnBookPlay {
-    private static int nowPlayingBookDuration;
-    private static String nowPlayingBookTitle;
-    private static int nowPlayingProgress;
+    private int nowPlayingBookDuration;
+    private String nowPlayingBookTitle;
+    private int nowPlayingProgress;
     BookDetailsFragment bookDetailsFragment;
     Fragment container1Fragment;
     Fragment container2Fragment; // BookDetailsFragment in landscape
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     SeekBar seekBar;
     String searchQuery = "";
     boolean singlePane;
-    private static boolean paused;
+    private boolean paused;
     boolean playing;
 
     // Lab 9 Service-related variables
@@ -77,9 +77,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 if (seekBar != null) {
                     AudiobookService.BookProgress bookProgress = (AudiobookService.BookProgress) msg.obj;
                     Log.d("Book progress is: ", String.valueOf(bookProgress.getProgress()));
-                    Log.d("Now playing book duration is", String.valueOf(MainActivity.nowPlayingBookDuration));
-                    Log.d("Now playing book title is", String.valueOf(MainActivity.nowPlayingBookTitle));
-                    Log.d("Now playing book progress is", String.valueOf(MainActivity.nowPlayingProgress));
+                    Log.d("Now playing book duration is", String.valueOf(nowPlayingBookDuration));
+                    Log.d("Now playing book title is", String.valueOf(nowPlayingBookTitle));
+                    Log.d("Now playing book progress is", String.valueOf(nowPlayingProgress));
                     if (bookProgress.getProgress() == -353746) {
                         // There was a playback error, stop audio playback
                         if (connected) {
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         }
                     }
 
-                    if (seekBar != null && (bookProgress.getProgress() < MainActivity.nowPlayingBookDuration)) {
+                    if (seekBar != null && (bookProgress.getProgress() < nowPlayingBookDuration)) {
                         seekBar.setProgress(bookProgress.getProgress()); // Set progress of SeekBar to current book's progress
                         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                             @Override
@@ -205,6 +205,20 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if (savedInstanceState != null) {
+            try {
+                nowPlayingBookDuration = savedInstanceState.getInt("nowPlayingBookDuration");
+                nowPlayingBookTitle = savedInstanceState.getString("nowPlayingBookTitle");
+                nowPlayingProgress = savedInstanceState.getInt("nowPlayingProgress");
+                books = savedInstanceState.getParcelableArrayList("books");
+                paused = savedInstanceState.getBoolean("paused");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // TODO get state information from storage if any exists in storage
+
         // Get user search query if any
         nowPlayingBookTitleText = findViewById(R.id.nowPlayingBookTitle);
         searchInput = findViewById(R.id.searchInput);
@@ -214,8 +228,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         seekBar = findViewById(R.id.seekBar);
 
         nowPlayingBookTitleText.setText(nowPlayingBookTitle); // set currently playing's book title even after Activity is restarted
-        seekBar.setProgress(MainActivity.nowPlayingProgress); // set current progress even after Activity is restarted
-        seekBar.setMax(MainActivity.nowPlayingBookDuration); // set seekBar max even after Activity is restarted
+        seekBar.setProgress(nowPlayingProgress); // set current progress even after Activity is restarted
+        seekBar.setMax(nowPlayingBookDuration); // set seekBar max even after Activity is restarted
 
         container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
         container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
@@ -327,6 +341,20 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt("nowPlayingBookDuration", nowPlayingBookDuration);
+        if (nowPlayingBookTitle != null)
+            outState.putString("nowPlayingBookTitle", nowPlayingBookTitle);
+        outState.putInt("nowPlayingProgress", nowPlayingProgress);
+        if (!books.isEmpty())
+            outState.putParcelableArrayList("books", books);
+        outState.putBoolean("paused", paused);
+
+        // TODO save nowPlayingBook information to internal storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         Log.d("UNBINDING FROM AUDIOBOOKSERVICE ", "Unbinded service connection");
@@ -407,6 +435,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void playBook(Book book) {
+
+        // TODO Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book to storage as well as set it for that book
+
+        // TODO if the book has a local copy, should play local file rather than stream from AudiobookService
+        //      Use play(File file, int id)
+
         startService(playBookIntent); // start AudiobookService when playing
 
         if (connected) {
