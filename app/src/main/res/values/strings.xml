@@ -1,10 +1,12 @@
 <resources>
     <string name="app_name">BookCase</string>
     <string name="publishedIn">Published in %d</string>
-    <string name="pageLength">%s pages</string>
+    <string name="pageLength">%d pages</string>
     <string name="image_of_book_cover">Image of book cover</string>
     <string name="play">Play</string>
     <string name="stop">Stop</string>
     <string name="pause">Pause</string>
     <string name="now_playing">Now Playing:</string>
+    <string name="download">Download</string>
+    <string name="delete">Delete</string>
 </resources>

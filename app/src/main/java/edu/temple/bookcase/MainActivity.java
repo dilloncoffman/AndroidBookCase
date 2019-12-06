@@ -29,7 +29,7 @@ import java.util.ArrayList;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
-public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface, BookDetailsFragment.OnBookPlay {
+public class MainActivity extends AppCompatActivity implements BookListFragment.OnBookSelectedInterface, BookDetailsFragment.BookDetailsInteractions {
     private int nowPlayingBookDuration;
     private String nowPlayingBookTitle;
     private int nowPlayingProgress;
@@ -217,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             }
         }
 
-        // TODO get state information from storage if any exists in storage
+        // TODO get state information from storage if any exists in storage for nowPlaying book and previously searched books
 
         // Get user search query if any
         nowPlayingBookTitleText = findViewById(R.id.nowPlayingBookTitle);
@@ -350,8 +350,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         if (!books.isEmpty())
             outState.putParcelableArrayList("books", books);
         outState.putBoolean("paused", paused);
-
-        // TODO save nowPlayingBook information to internal storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
     }
 
     @Override
@@ -359,6 +357,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         super.onDestroy();
         Log.d("UNBINDING FROM AUDIOBOOKSERVICE ", "Unbinded service connection");
         unbindService(serviceConnection);
+
+        // TODO save nowPlayingBook information to internal storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
+
     }
 
     /* Fetches books */
@@ -437,9 +438,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     public void playBook(Book book) {
 
         // TODO Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book to storage as well as set it for that book
+        // TODO nowPlayingBook.setSavedProgress(nowPlayingBookProgress - 10);
 
-        // TODO if the book has a local copy, should play local file rather than stream from AudiobookService
-        //      Use play(File file, int id)
+        // TODO nowPlayingBook = book
+
+        // TODO if the nowPlayingBook has a local copy, should play local file rather than stream from AudiobookService
+        // TODO    Use play(File file, book.getSavedProgress())
 
         startService(playBookIntent); // start AudiobookService when playing
 
@@ -453,5 +457,17 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             playing = true;
             paused = false;
         }
+    }
+
+    @Override
+    public void downloadBookToStorage(Book book) {
+        // TODO Download book to storage using https://kamorris.com/lab/audlib/download.php?id=<book id>
+        // TODO book.setBookDownloaded(true)
+    }
+
+    @Override
+    public void deleteBookFromStorage(Book book) {
+        // TODO Delete book from storage
+        // TODO book.setBookDownloaded(false)
     }
 }

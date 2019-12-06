@@ -22,7 +22,7 @@ import java.util.Objects;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link BookDetailsFragment.OnBookPlay} interface
+ * {@link BookDetailsFragment.BookDetailsInteractions} interface
  * to handle interaction events.
  * Use the {@link BookDetailsFragment#newInstance} factory method to
  * create an instance of this fragment.
@@ -30,12 +30,14 @@ import java.util.Objects;
 public class BookDetailsFragment extends Fragment {
 
     public static final String BOOK_KEY = "book";
-    private OnBookPlay fragmentParent;
+    private BookDetailsInteractions fragmentParent;
     ConstraintLayout bookDetailsView;
     ImageView bookCover;
     TextView bookTitle, bookAuthor, bookPublishedIn, bookPageLength;
     Book book;
     Button playBtn;
+    Button downloadBtn;
+    Button deleteBtn;
 
 
     public BookDetailsFragment() {
@@ -85,10 +87,36 @@ public class BookDetailsFragment extends Fragment {
         if (book != null) {
             displayBook(book);
             playBtn = getView().findViewById(R.id.playBtn);
+            downloadBtn = getView().findViewById(R.id.downloadBtn);
+            deleteBtn = getView().findViewById(R.id.deleteBtn);
+
+            if (book.isBookDownloaded() && downloadBtn != null) {
+                // Show just the delete button
+                downloadBtn.setVisibility(View.INVISIBLE);
+            } else if (deleteBtn != null) {
+                // Show just the download button
+                deleteBtn.setVisibility(View.INVISIBLE);
+            }
+
+            // Play Listener
             playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                    fragmentParent.playBook(book);
+                }
+            });
+            // Download Listener
+            downloadBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fragmentParent.downloadBookToStorage(book);
+                }
+            });
+            // Delete Listener
+            deleteBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    fragmentParent.deleteBookFromStorage(book);
                 }
             });
         }
@@ -98,11 +126,11 @@ public class BookDetailsFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof BookDetailsFragment.OnBookPlay) {
-            fragmentParent = (BookDetailsFragment.OnBookPlay) context;
+        if (context instanceof BookDetailsFragment.BookDetailsInteractions) {
+            fragmentParent = (BookDetailsFragment.BookDetailsInteractions) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnBookPlay interface");
+                    + " must implement BookDetailsInteractions interface");
         }
     }
 
@@ -139,7 +167,9 @@ public class BookDetailsFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnBookPlay {
+    public interface BookDetailsInteractions {
         void playBook(Book book);
+        void downloadBookToStorage(Book book);
+        void deleteBookFromStorage(Book book);
     }
 }
