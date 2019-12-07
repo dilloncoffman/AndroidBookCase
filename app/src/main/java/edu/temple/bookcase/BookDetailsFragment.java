@@ -1,11 +1,14 @@
 package edu.temple.bookcase;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +19,7 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.Objects;
 
 
@@ -97,6 +101,32 @@ public class BookDetailsFragment extends Fragment {
                 // Show just the download button
                 deleteBtn.setVisibility(View.INVISIBLE);
             }
+
+//            File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
+//            Log.d("Files already in external storage are ", " ");
+//            boolean bookDownloadedAlready = false;
+//            if (files != null) {
+//                for (File file : files) {
+//                    Log.d(" ", file.getName());
+//                    if (file.getName().contains(String.valueOf(book.getId()))) {
+//                        // Book already has file locally for it
+//                        Log.d("A book is already downloaded with that ID", String.valueOf(Uri.fromFile(file)));
+//                        bookDownloadedAlready = true;
+//                    }
+//                }
+//            }
+//
+//            Button deleteBtn = getView().findViewById(R.id.deleteBtn);
+//            Button downloadBtn = getView().findViewById(R.id.downloadBtn);
+//
+//            if (bookDownloadedAlready) {
+//                deleteBtn.setVisibility(View.VISIBLE);
+//                downloadBtn.setVisibility(View.INVISIBLE);
+//                book.setBookDownloaded(true);
+//            } else {
+//                deleteBtn.setVisibility(View.INVISIBLE);
+//                downloadBtn.setVisibility(View.VISIBLE);
+//            }
 
             // Play Listener
             playBtn.setOnClickListener(new View.OnClickListener() {

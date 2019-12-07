@@ -1,16 +1,18 @@
 package edu.temple.bookcase;
 
+import android.Manifest;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.net.Uri;
+import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.os.storage.StorageManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,22 +21,20 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileDescriptor;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import edu.temple.audiobookplayer.AudiobookService;
 
@@ -57,7 +57,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     boolean singlePane;
     private boolean paused;
     boolean playing;
-    File storageDirectory = null;
 
     // Lab 9 Service-related variables
     boolean connected;
@@ -67,14 +66,14 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             connected = true;
-            Log.d("ServiceConnection: ","Connected");
+            Log.d("ServiceConnection: ", "Connected");
             mediaControlBinder = (AudiobookService.MediaControlBinder) service; // hold on to Binder that service is returning that describes interactions you can perform
             mediaControlBinder.setProgressHandler(seekBarHandler); // set Handler for SeekBar progress
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
-            Log.d("ServiceConnection: ","Disconnected: Service was killed for some reason");
+            Log.d("ServiceConnection: ", "Disconnected: Service was killed for some reason");
             connected = false; // no longer connected
             mediaControlBinder = null; // to protect against memory leak
         }
@@ -211,42 +210,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         }
     });
 
-    Handler downloadBookHandler = new Handler(new Handler.Callback() {
-        @Override
-        public boolean handleMessage(Message msg) {
-            if (msg.obj != null) {
-                Log.d("Storing book file to internal storage in downloadBookHandler", String.valueOf(getFilesDir()));
-                Log.d("ID of book to be stored: ", String.valueOf(msg.what));
-
-                String bookAudioFileName = msg.what + "-book-audio.mp3";
-
-                FileOutputStream fos = null;
-                try {
-                    storageDirectory = getFilesDir();
-                    fos = openFileOutput(bookAudioFileName, Context.MODE_PRIVATE);
-                    byte[] buf = (msg.obj).toString().getBytes();
-                    fos.write(buf);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } finally {
-                    try {
-                        if (fos != null) {
-                            fos.close();
-                        }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                String savedBook = null;
-                for (int i = 0; i < books.size(); i++)
-                    if (books.get(i).getId() == msg.what)
-                        savedBook = books.get(i).getTitle();
-                Toast.makeText(MainActivity.this, "Saved " + savedBook + " successfully to " + storageDirectory + "/" + bookAudioFileName, Toast.LENGTH_LONG).show();
-            }
-            return true;
-        }
-    });
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -265,7 +228,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
             }
         }
 
-        // TODO get state information from storage if any exists in storage for nowPlaying book and previously searched books
+        // TODO 1. Loop through all the books, if any of them already have a local file in external storage, book.setBookDownloaded(true);
+        // TODO 2. Get state information from storage if any exists in storage for nowPlaying book and previously searched books
 
         // Get user search query if any
         nowPlayingBookTitleText = findViewById(R.id.nowPlayingBookTitle);
@@ -409,8 +373,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         Log.d("UNBINDING FROM AUDIOBOOKSERVICE ", "Unbinded service connection");
         unbindService(serviceConnection);
 
-        // TODO save nowPlayingBook information to internal storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
-
+        // TODO 3. save nowPlayingBook information to external storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
     }
 
     /* Fetches books */
@@ -487,52 +450,51 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void playBook(Book book) {
-
-        // if book.getId()
-        File[] files = this.getFilesDir().listFiles();
-        Log.d("Files in internal storage are ", " ");
+        // If there is a local downloaded audio book file, play it
+        File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
         if (files != null) {
+            Log.d("Files in external storage are ", " ");
             for (File file : files) {
                 Log.d(" ", file.getName());
                 if (file.getName().contains(String.valueOf(book.getId()))) {
-                    nowPlayingBook = book;
-                    // Book already has file locally for it
-                    Log.d("Playing book from local internal storage", String.valueOf(Uri.fromFile(file)));
-                    Log.d("Playing book from local internal storage with absolute path: ", file.getAbsolutePath());
-                    Log.d("Book is downloaded?", String.valueOf(book.isBookDownloaded()));
-                    Log.d("Book's savedProgress: ", String.valueOf(book.getSavedProgress()));
-                    Log.d("File to play: ", file.toString());
+                    // Book already has audio book file locally to play instead of stream
+                    Log.d("Playing book from local external storage with absolute path of: ", file.getAbsolutePath());
+                    Log.d("Book is downloaded locally already?", String.valueOf(book.isBookDownloaded()));
+                    Log.d("Local audio book file's savedProgress: ", String.valueOf(book.getSavedProgress()));
+                    Log.d("Local audio book file to play: ", file.toString());
                     if (file.exists()) {// && book.isDownloaded()
+                        Log.d("Playing local audio book file: ", file.getName());
+                        seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
+                        nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
+                        nowPlayingBookTitle = book.getTitle(); // Hold reference to now playing book title for when Activity is restarted on orientation change
+                        nowPlayingBookTitleText.setText(nowPlayingBookTitle); // Set now playing text
                         mediaControlBinder.play(file, book.getSavedProgress());
+                        nowPlayingBook = book;
+                        playing = true;
+                        paused = false;
                     } else {
                         Log.d("No files exist in storage with that name", ":(");
                     }
-                    return; // don't execute AudiobookService code below to stream book
+                    return; // Don't execute AudiobookService code below to stream book, just return from method
                 }
             }
         }
 
 
-        // TODO Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book to storage as well as set it for that book
-//        if (nowPlayingBook != null) {
-//            nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
-//        }
-        // TODO nowPlayingBook.setSavedProgress(nowPlayingBookProgress - 10);
+        // TODO 4. Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book of any kind
+        // TODO 5. Save new nowPlayingBook to storage, even if it isn't in storage to keep track of what was playing even if onFinish() is called for Activity
+        // nowPlayingBook.setSavedProgress(nowPlayingBookProgress - 10);
 
-        nowPlayingBook = book;
-
-        // TODO if the nowPlayingBook has a local copy, should play local file rather than stream from AudiobookService
-        // TODO    Use play(File file, book.getSavedProgress())
-
-        startService(playBookIntent); // start AudiobookService when playing
-
+        // Otherwise stream the audio book
         if (connected && !(book.isBookDownloaded())) {
-            Log.d("Playing BOOK", String.valueOf(connected));
+            startService(playBookIntent); // start AudiobookService when playing
+            Log.d("Streaming audio book: ", String.valueOf(book.getTitle()));
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
             nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
             nowPlayingBookTitle = book.getTitle(); // Hold reference to now playing book title for when Activity is restarted on orientation change
             nowPlayingBookTitleText.setText(nowPlayingBookTitle); // Set now playing text
             mediaControlBinder.play(book.getId()); // Play book
+            nowPlayingBook = book;
             playing = true;
             paused = false;
         }
@@ -540,28 +502,55 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void downloadBookToStorage(final Book book) {
-        // TODO Download book to storage using https://kamorris.com/lab/audlib/download.php?id=<book id>
         new Thread() {
             @Override
             public void run() {
-                URL url = null;
-                try {
-                    url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + book.getId());
-                    Log.d("Downloading book response. URL is: ", url.toString());
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
-                    StringBuilder builder = new StringBuilder(); // StringBuilder, keep adding on bits of a string
-                    String response;
-                    while ((response = reader.readLine()) != null) {
-                        builder.append(response);
+                // Download audio book to external public storage directory
+                String bookAudioFileName = book.getId() + "-book-audio.mp3";
+                File externalStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                File downloadedAudioBookFile = new File(externalStorageDir, bookAudioFileName);
+                // As of API 23+, need user permission to access even external storage regardless of manifest permission. See https://developer.android.com/training/permissions/requesting.html#perm-check
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    URL url;
+                    FileOutputStream fos = null;
+                    BufferedInputStream reader = null;
+                    try {
+                        url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + book.getId());
+                        reader = new BufferedInputStream(url.openStream());
+
+                        Log.d("Downloading book response. URL is: ", url.toString());
+                        Log.d("Downloaded audio book path is: ", downloadedAudioBookFile.getPath());
+
+                        fos = new FileOutputStream(downloadedAudioBookFile);
+                        byte[] buffer = new byte[30000]; // No book should be over 30 MB in this case
+                        int count = 0;
+                        while ((count = reader.read(buffer, 0, 30000)) != -1) {
+                            fos.write(buffer, 0, count);
+                        }
+                        // book.setBookDownloaded(true); // setBookDownloaded to true for this book
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        if (fos != null) {
+                            try {
+                                fos.flush();
+                                fos.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        if (reader != null) {
+                            try {
+                                reader.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
-                    // Need to use Handler
-                    Message msg = Message.obtain();
-                    msg.obj = builder.toString(); // gives you string created from StringBuilder object
-                    msg.what = book.getId(); // useful in naming file in internal storage for specific book
-                    downloadBookHandler.sendMessage(msg);
-                    book.setBookDownloaded(true); // setBookDownloaded to true for this book
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    // Request permission from the user to access external storage, this is required as of API 23+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
                 }
             }
         }.start();
@@ -569,7 +558,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
     @Override
     public void deleteBookFromStorage(Book book) {
-        // TODO Delete book from storage
-        // TODO book.setBookDownloaded(false)
+        // TODO 6. Delete book from storage
+        // TODO 7. book.setBookDownloaded(false) and update books with this new info
     }
 }
