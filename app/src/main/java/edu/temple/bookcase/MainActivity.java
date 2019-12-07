@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -517,12 +516,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     }
 
     @Override
-    public void downloadBookToStorage(final Book book) {
+    public void downloadBookToStorage(final Book bookToDownload) {
         new Thread() {
             @Override
             public void run() {
                 // Download audio book to external public storage directory
-                String bookAudioFileName = book.getId() + "-book-audio.mp3";
+                String bookAudioFileName = bookToDownload.getId() + "-" + bookToDownload.getTitle().toLowerCase().replace(" ", "-") + "-book-audio.mp3";
                 File externalStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                 externalStorageDir.mkdirs(); // make Download directory if it doesn't already exist
                 File downloadedAudioBookFile = new File(externalStorageDir, bookAudioFileName);
@@ -532,7 +531,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     FileOutputStream fos = null;
                     BufferedInputStream reader = null;
                     try {
-                        url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + book.getId());
+                        url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + bookToDownload.getId());
                         reader = new BufferedInputStream(url.openStream());
 
                         Log.d("Downloading book response. URL is: ", url.toString());
@@ -543,7 +542,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         while ((count = reader.read(buffer, 0, 30000)) != -1) {
                             fos.write(buffer, 0, count);
                         }
-                        book.setBookDownloaded(true);
+                        bookToDownload.setBookDownloaded(true);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {
@@ -573,8 +572,36 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     }
 
     @Override
-    public void deleteBookFromStorage(Book book) {
-        // TODO 6. Delete book from storage
-        // TODO 7. book.setBookDownloaded(false) and update books with this new info
+    public void deleteBookFromStorage(final Book bookToDelete) {
+        new Thread() {
+            @Override
+            public void run() {
+                // As of API 23+, need user permission to access even external storage regardless of manifest permission. See https://developer.android.com/training/permissions/requesting.html#perm-check
+                if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    try {
+                        File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
+                        if (files != null) {
+                            for (File file : files) {
+                                Log.d("Deleting audio book file: ", file.getName());
+                                if (String.valueOf(file.getName().charAt(0)).equals(String.valueOf(bookToDelete.getId()))) {
+                                    // Book already has file locally for it
+                                    boolean deleted = file.delete();
+                                    if (deleted) {
+                                        bookToDelete.setBookDownloaded(false);
+                                        Log.d("Deleted: ", file.getName());
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    // Request permission from the user to access external storage, this is required as of API 23+
+                    ActivityCompat.requestPermissions(MainActivity.this,
+                            new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+                }
+            }
+        }.start();
     }
 }
