@@ -507,7 +507,19 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     Log.d("Book is downloaded locally already?", String.valueOf(book.isBookDownloaded()));
                     Log.d("Local audio book file's savedProgress: ", String.valueOf(book.getSavedProgress()));
                     Log.d("Local audio book file to play: ", file.toString());
-                    if (file.exists()) {// && book.isDownloaded()
+                    // Save previously playing book's progress before playing new audio book file
+                    if (nowPlayingBook != null) {
+                        // Save it's progress to be 10 seconds before current progress as per lab 10 document
+                        nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
+                        Log.d("NOWPLAYINGBOOK WAS LOCAL AUDIO FILE. PROGRESS WAS SAVED BEFORE PLAYING NEW BOOK AT", nowPlayingBook.toString());
+                        // Save local audio book file's progress
+                        for (int i = 0; i < books.size(); i++) {
+                            if (nowPlayingBook.getId() == books.get(i).getId()) {
+                                books.get(i).setSavedProgress(nowPlayingProgress - 10);
+                            }
+                        }
+                    }
+                    if (file.exists() && connected && book.isBookDownloaded()) {
                         Log.d("Playing local audio book file: ", file.getName());
                         seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
                         nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
@@ -535,6 +547,17 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
         // Otherwise stream the audio book
         if (connected && !(book.isBookDownloaded())) {
+            if (nowPlayingBook.isBookDownloaded() && nowPlayingBook != null) {
+                // Save it's progress to be 10 seconds before current progress as per lab 10 document
+                nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
+                Log.d("NOWPLAYINGBOOK WAS LOCAL AUDIO FILE. PROGRESS WAS SAVED BEFORE PLAYING NEW BOOK AT", nowPlayingBook.toString());
+                // Save local audio book file's progress for that specific book
+                for (int i = 0; i < books.size(); i++) {
+                    if (nowPlayingBook.getId() == books.get(i).getId()) {
+                        books.get(i).setSavedProgress(nowPlayingProgress - 10);
+                    }
+                }
+            }
             startService(playBookIntent); // start AudiobookService when playing
             Log.d("Streaming audio book: ", String.valueOf(book.getTitle()));
             Log.d("NOW PLAYING BOOK IS", nowPlayingBook.toString());
