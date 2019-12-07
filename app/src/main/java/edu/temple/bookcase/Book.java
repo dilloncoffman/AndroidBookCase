@@ -6,7 +6,7 @@ import android.os.Parcelable;
 public class Book implements Parcelable {
     private boolean bookDownloaded;
     private int duration;
-    private int savedProgress;
+    private int savedProgress = 0;
     private int published;
     private int id;
     private String title;

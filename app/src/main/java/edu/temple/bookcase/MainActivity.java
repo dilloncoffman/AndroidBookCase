@@ -4,9 +4,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.storage.StorageManager;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,12 +19,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -33,6 +42,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     private int nowPlayingBookDuration;
     private String nowPlayingBookTitle;
     private int nowPlayingProgress;
+    private Book nowPlayingBook;
     BookDetailsFragment bookDetailsFragment;
     Fragment container1Fragment;
     Fragment container2Fragment; // BookDetailsFragment in landscape
@@ -47,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     boolean singlePane;
     private boolean paused;
     boolean playing;
+    File storageDirectory = null;
 
     // Lab 9 Service-related variables
     boolean connected;
@@ -200,6 +211,42 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         }
     });
 
+    Handler downloadBookHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.obj != null) {
+                Log.d("Storing book file to internal storage in downloadBookHandler", String.valueOf(getFilesDir()));
+                Log.d("ID of book to be stored: ", String.valueOf(msg.what));
+
+                String bookAudioFileName = msg.what + "-book-audio.mp3";
+
+                FileOutputStream fos = null;
+                try {
+                    storageDirectory = getFilesDir();
+                    fos = openFileOutput(bookAudioFileName, Context.MODE_PRIVATE);
+                    byte[] buf = (msg.obj).toString().getBytes();
+                    fos.write(buf);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        if (fos != null) {
+                            fos.close();
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                String savedBook = null;
+                for (int i = 0; i < books.size(); i++)
+                    if (books.get(i).getId() == msg.what)
+                        savedBook = books.get(i).getTitle();
+                Toast.makeText(MainActivity.this, "Saved " + savedBook + " successfully to " + storageDirectory + "/" + bookAudioFileName, Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
+    });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -207,6 +254,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
         if (savedInstanceState != null) {
             try {
+                nowPlayingBook = savedInstanceState.getParcelable("nowPlayingBook");
                 nowPlayingBookDuration = savedInstanceState.getInt("nowPlayingBookDuration");
                 nowPlayingBookTitle = savedInstanceState.getString("nowPlayingBookTitle");
                 nowPlayingProgress = savedInstanceState.getInt("nowPlayingProgress");
@@ -347,8 +395,11 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         if (nowPlayingBookTitle != null)
             outState.putString("nowPlayingBookTitle", nowPlayingBookTitle);
         outState.putInt("nowPlayingProgress", nowPlayingProgress);
-        if (!books.isEmpty())
+        if (!(books.isEmpty()))
             outState.putParcelableArrayList("books", books);
+        if (nowPlayingBook != null) {
+            outState.putParcelable("nowPlayingBook", nowPlayingBook);
+        }
         outState.putBoolean("paused", paused);
     }
 
@@ -437,17 +488,45 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     @Override
     public void playBook(Book book) {
 
+        // if book.getId()
+        File[] files = this.getFilesDir().listFiles();
+        Log.d("Files in internal storage are ", " ");
+        if (files != null) {
+            for (File file : files) {
+                Log.d(" ", file.getName());
+                if (file.getName().contains(String.valueOf(book.getId()))) {
+                    nowPlayingBook = book;
+                    // Book already has file locally for it
+                    Log.d("Playing book from local internal storage", String.valueOf(Uri.fromFile(file)));
+                    Log.d("Playing book from local internal storage with absolute path: ", file.getAbsolutePath());
+                    Log.d("Book is downloaded?", String.valueOf(book.isBookDownloaded()));
+                    Log.d("Book's savedProgress: ", String.valueOf(book.getSavedProgress()));
+                    Log.d("File to play: ", file.toString());
+                    if (file.exists()) {// && book.isDownloaded()
+                        mediaControlBinder.play(file, book.getSavedProgress());
+                    } else {
+                        Log.d("No files exist in storage with that name", ":(");
+                    }
+                    return; // don't execute AudiobookService code below to stream book
+                }
+            }
+        }
+
+
         // TODO Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book to storage as well as set it for that book
+//        if (nowPlayingBook != null) {
+//            nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
+//        }
         // TODO nowPlayingBook.setSavedProgress(nowPlayingBookProgress - 10);
 
-        // TODO nowPlayingBook = book
+        nowPlayingBook = book;
 
         // TODO if the nowPlayingBook has a local copy, should play local file rather than stream from AudiobookService
         // TODO    Use play(File file, book.getSavedProgress())
 
         startService(playBookIntent); // start AudiobookService when playing
 
-        if (connected) {
+        if (connected && !(book.isBookDownloaded())) {
             Log.d("Playing BOOK", String.valueOf(connected));
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
             nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
@@ -460,9 +539,32 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
     }
 
     @Override
-    public void downloadBookToStorage(Book book) {
+    public void downloadBookToStorage(final Book book) {
         // TODO Download book to storage using https://kamorris.com/lab/audlib/download.php?id=<book id>
-        // TODO book.setBookDownloaded(true)
+        new Thread() {
+            @Override
+            public void run() {
+                URL url = null;
+                try {
+                    url = new URL("https://kamorris.com/lab/audlib/download.php?id=" + book.getId());
+                    Log.d("Downloading book response. URL is: ", url.toString());
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));
+                    StringBuilder builder = new StringBuilder(); // StringBuilder, keep adding on bits of a string
+                    String response;
+                    while ((response = reader.readLine()) != null) {
+                        builder.append(response);
+                    }
+                    // Need to use Handler
+                    Message msg = Message.obtain();
+                    msg.obj = builder.toString(); // gives you string created from StringBuilder object
+                    msg.what = book.getId(); // useful in naming file in internal storage for specific book
+                    downloadBookHandler.sendMessage(msg);
+                    book.setBookDownloaded(true); // setBookDownloaded to true for this book
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     @Override
