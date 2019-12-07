@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
@@ -161,6 +162,24 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     books.add(newBook);
                 }
 
+                // TODO 1. Loop through all the books, if any of them already have a local file in external storage, book.setBookDownloaded(true);
+                for (int i = 0; i < books.size(); i++) {
+                    File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
+                    if (files != null) {
+                        for (File file : files) {
+                            Log.d(" ", file.getName());
+                            Log.d("file char: ", String.valueOf(file.getName().charAt(0)));
+                            Log.d("book id: ", String.valueOf(books.get(i).getId()));
+                            if (String.valueOf(file.getName().charAt(0)).equals(String.valueOf(books.get(i).getId()))) {
+                                // Book already has file locally for it
+                                Log.d("A book is already downloaded with that ID at: ", file.getAbsolutePath());
+                                books.get(i).setBookDownloaded(true);
+                            }
+                        }
+                    }
+                }
+                // TODO 2. Get state information from storage if any exists in storage for nowPlaying book and previously searched books
+
                 container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
                 container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
                 singlePane = (findViewById(R.id.container_2) == null); // check if in single pane mode
@@ -227,9 +246,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 e.printStackTrace();
             }
         }
-
-        // TODO 1. Loop through all the books, if any of them already have a local file in external storage, book.setBookDownloaded(true);
-        // TODO 2. Get state information from storage if any exists in storage for nowPlaying book and previously searched books
 
         // Get user search query if any
         nowPlayingBookTitleText = findViewById(R.id.nowPlayingBookTitle);
@@ -508,6 +524,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 // Download audio book to external public storage directory
                 String bookAudioFileName = book.getId() + "-book-audio.mp3";
                 File externalStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+                externalStorageDir.mkdirs(); // make Download directory if it doesn't already exist
                 File downloadedAudioBookFile = new File(externalStorageDir, bookAudioFileName);
                 // As of API 23+, need user permission to access even external storage regardless of manifest permission. See https://developer.android.com/training/permissions/requesting.html#perm-check
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
@@ -520,14 +537,13 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
 
                         Log.d("Downloading book response. URL is: ", url.toString());
                         Log.d("Downloaded audio book path is: ", downloadedAudioBookFile.getPath());
-
                         fos = new FileOutputStream(downloadedAudioBookFile);
                         byte[] buffer = new byte[30000]; // No book should be over 30 MB in this case
                         int count = 0;
                         while ((count = reader.read(buffer, 0, 30000)) != -1) {
                             fos.write(buffer, 0, count);
                         }
-                        // book.setBookDownloaded(true); // setBookDownloaded to true for this book
+                        book.setBookDownloaded(true);
                     } catch (IOException e) {
                         e.printStackTrace();
                     } finally {

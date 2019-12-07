@@ -102,32 +102,6 @@ public class BookDetailsFragment extends Fragment {
                 deleteBtn.setVisibility(View.INVISIBLE);
             }
 
-//            File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
-//            Log.d("Files already in external storage are ", " ");
-//            boolean bookDownloadedAlready = false;
-//            if (files != null) {
-//                for (File file : files) {
-//                    Log.d(" ", file.getName());
-//                    if (file.getName().contains(String.valueOf(book.getId()))) {
-//                        // Book already has file locally for it
-//                        Log.d("A book is already downloaded with that ID", String.valueOf(Uri.fromFile(file)));
-//                        bookDownloadedAlready = true;
-//                    }
-//                }
-//            }
-//
-//            Button deleteBtn = getView().findViewById(R.id.deleteBtn);
-//            Button downloadBtn = getView().findViewById(R.id.downloadBtn);
-//
-//            if (bookDownloadedAlready) {
-//                deleteBtn.setVisibility(View.VISIBLE);
-//                downloadBtn.setVisibility(View.INVISIBLE);
-//                book.setBookDownloaded(true);
-//            } else {
-//                deleteBtn.setVisibility(View.INVISIBLE);
-//                downloadBtn.setVisibility(View.VISIBLE);
-//            }
-
             // Play Listener
             playBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -140,6 +114,8 @@ public class BookDetailsFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     fragmentParent.downloadBookToStorage(book);
+                    downloadBtn.setVisibility(View.INVISIBLE);
+                    deleteBtn.setVisibility(View.VISIBLE);
                 }
             });
             // Delete Listener
@@ -147,6 +123,8 @@ public class BookDetailsFragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     fragmentParent.deleteBookFromStorage(book);
+                    deleteBtn.setVisibility(View.INVISIBLE);
+                    downloadBtn.setVisibility(View.VISIBLE);
                 }
             });
         }
