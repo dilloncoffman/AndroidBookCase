@@ -161,7 +161,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     books.add(newBook);
                 }
 
-                // TODO 1. Loop through all the books, if any of them already have a local file in external storage, book.setBookDownloaded(true);
                 for (int i = 0; i < books.size(); i++) {
                     File[] files = Objects.requireNonNull(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)).listFiles();
                     if (files != null) {
@@ -177,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         }
                     }
                 }
+
                 // TODO 2. Get state information from storage if any exists in storage for nowPlaying book and previously searched books
 
                 container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
@@ -339,10 +339,36 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 // Only if connected to service and currently playing something
                 if (connected && !paused) {
                     mediaControlBinder.pause(); // pause the book
+                    if (nowPlayingBook.isBookDownloaded()) {
+                        // The book being paused is downloaded locally, save its progress to be 10 seconds before it was paused
+                        nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
+                        Log.d("NOWPLAYINGBOOK WAS LOCAL AUDIO FILE AND IS PAUSED AT", nowPlayingBook.toString());
+                        // Save local audio book file's progress
+                        // Loop through all the books, if nowPlaying.getId === books.get(i).getId() then set progress of that book as well for when it is played later
+                        for (int i = 0; i < books.size(); i++) {
+                            if (nowPlayingBook.getId() == books.get(i).getId()) {
+                                books.get(i).setSavedProgress(nowPlayingProgress - 10);
+                            }
+                        }
+                    } else {
+                        Log.d("NOWPLAYINGBOOK WAS STREAMED AND IS PAUSED AT", nowPlayingBook.toString());
+                        nowPlayingBook.setSavedProgress(nowPlayingProgress);
+                        // Save streamed books progress
+                        for (int i = 0; i < books.size(); i++) {
+                            if (nowPlayingBook.getId() == books.get(i).getId()) {
+                                books.get(i).setSavedProgress(nowPlayingProgress);
+                            }
+                        }
+                    }
                     playing = false;
                     paused = true;
                 } else if (connected) { // Un-pause the book with the way AudiobookService method for pausing is set up
                     mediaControlBinder.pause(); // Resumes audio playback
+                    if (nowPlayingBook.isBookDownloaded() && nowPlayingBook.getSavedProgress() > 0) {
+                        // Local audio book file had already been playing before, seek to it's savedProgress
+                        mediaControlBinder.seekTo(nowPlayingBook.getSavedProgress());
+                        nowPlayingProgress = nowPlayingBook.getSavedProgress();
+                    }
                     playing = true;
                     paused = false;
                 }
@@ -485,6 +511,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         nowPlayingBookTitleText.setText(nowPlayingBookTitle); // Set now playing text
                         mediaControlBinder.play(file, book.getSavedProgress());
                         nowPlayingBook = book;
+                        Log.d("NOW PLAYING BOOK IS", nowPlayingBook.toString());
                         playing = true;
                         paused = false;
                     } else {
@@ -504,11 +531,12 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         if (connected && !(book.isBookDownloaded())) {
             startService(playBookIntent); // start AudiobookService when playing
             Log.d("Streaming audio book: ", String.valueOf(book.getTitle()));
+            Log.d("NOW PLAYING BOOK IS", nowPlayingBook.toString());
             seekBar.setMax(book.getDuration()); // Set seekBar max to currently playing book's duration
             nowPlayingBookDuration = book.getDuration(); // Holding reference to currently playing book's duration so when it reaches its end, I stop the AudiobookService and reset seekBar
             nowPlayingBookTitle = book.getTitle(); // Hold reference to now playing book title for when Activity is restarted on orientation change
             nowPlayingBookTitleText.setText(nowPlayingBookTitle); // Set now playing text
-            mediaControlBinder.play(book.getId()); // Play book
+            mediaControlBinder.play(book.getId()); // Always play book from the beginning since it is being streamed
             nowPlayingBook = book;
             playing = true;
             paused = false;
