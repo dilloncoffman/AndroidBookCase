@@ -344,19 +344,9 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                         nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
                         Log.d("NOWPLAYINGBOOK WAS LOCAL AUDIO FILE AND IS PAUSED AT", nowPlayingBook.toString());
                         // Save local audio book file's progress
-                        // Loop through all the books, if nowPlaying.getId === books.get(i).getId() then set progress of that book as well for when it is played later
                         for (int i = 0; i < books.size(); i++) {
                             if (nowPlayingBook.getId() == books.get(i).getId()) {
                                 books.get(i).setSavedProgress(nowPlayingProgress - 10);
-                            }
-                        }
-                    } else {
-                        Log.d("NOWPLAYINGBOOK WAS STREAMED AND IS PAUSED AT", nowPlayingBook.toString());
-                        nowPlayingBook.setSavedProgress(nowPlayingProgress);
-                        // Save streamed books progress
-                        for (int i = 0; i < books.size(); i++) {
-                            if (nowPlayingBook.getId() == books.get(i).getId()) {
-                                books.get(i).setSavedProgress(nowPlayingProgress);
                             }
                         }
                     }
@@ -379,8 +369,21 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         stopBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 // Only if connected to service
                 if (connected) {
+                    if (nowPlayingBook.isBookDownloaded()) {
+                        // The book being paused is downloaded locally, save its progress to be 10 seconds before it was paused
+                        nowPlayingBook.setSavedProgress(nowPlayingProgress - 10);
+                        Log.d("NOWPLAYINGBOOK WAS A LOCAL AUDIO FILE", nowPlayingBook.toString());
+                        // Reset local audio book file's progress
+                        for (int i = 0; i < books.size(); i++) {
+                            if (nowPlayingBook.getId() == books.get(i).getId()) {
+                                books.get(i).setSavedProgress(0); // Reset its progress to 0 if stopped while playing
+                                nowPlayingProgress = 0;
+                            }
+                        }
+                    }
                     mediaControlBinder.stop(); // Stop the book, assuming we'd want to stop (reset progress to beginning) even if in paused state
                     nowPlayingBookTitle = ""; // Set // Set now playing book title to nothing since book has finished
                     nowPlayingBookTitleText.setText(""); // Set now playing book text to nothing since book has finished
@@ -415,6 +418,7 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         unbindService(serviceConnection);
 
         // TODO 3. save nowPlayingBook information to external storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
+
     }
 
     /* Fetches books */
@@ -521,6 +525,8 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 }
             }
         }
+
+
 
 
         // TODO 4. Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book of any kind
