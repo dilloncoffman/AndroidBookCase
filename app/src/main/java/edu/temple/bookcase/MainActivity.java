@@ -177,8 +177,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                     }
                 }
 
-                // TODO 2. Get state information from storage if any exists in storage for nowPlaying book and previously searched books
-
                 container1Fragment = getSupportFragmentManager().findFragmentById(R.id.container_1); // get reference to fragment currently in container_1
                 container2Fragment = getSupportFragmentManager().findFragmentById(R.id.container_2); // get reference to fragment currently in container_1
                 singlePane = (findViewById(R.id.container_2) == null); // check if in single pane mode
@@ -416,9 +414,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
         super.onDestroy();
         Log.d("UNBINDING FROM AUDIOBOOKSERVICE ", "Unbinded service connection");
         unbindService(serviceConnection);
-
-        // TODO 3. save nowPlayingBook information to external storage and list of books in case user searched for books and then Activity was destroyed and recreated to be gotten from
-
     }
 
     /* Fetches books */
@@ -537,13 +532,6 @@ public class MainActivity extends AppCompatActivity implements BookListFragment.
                 }
             }
         }
-
-
-
-
-        // TODO 4. Save current position of nowPlayingBook minus 10 seconds if it is being interrupted to play a new book of any kind
-        // TODO 5. Save new nowPlayingBook to storage, even if it isn't in storage to keep track of what was playing even if onFinish() is called for Activity
-        // nowPlayingBook.setSavedProgress(nowPlayingBookProgress - 10);
 
         // Otherwise stream the audio book
         if (connected && !(book.isBookDownloaded())) {
